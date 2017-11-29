@@ -53,6 +53,6 @@ const handler = {
 };
 
 module.exports = {
-    auth: urls.auth(),
+    auth: urls.auth,
     token: handler.token
 };

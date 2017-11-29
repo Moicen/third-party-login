@@ -18,8 +18,7 @@ exports.init = (options) => {
 names.forEach((name) => {
     exports[name] = {
         auth: (req, res, next) => {
-            const url = utils.url("auth");
-            res.redirect(url);
+            res.redirect(platforms[name].auth());
         },
         token: (req, res, next) => {
             const opt = config[name];
