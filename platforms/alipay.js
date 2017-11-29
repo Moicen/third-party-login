@@ -1,10 +1,9 @@
 const Promise = require("bluebird");
 const request = Promise.promisify(require("request"));
 const utils = require("../lib/utils");
-const config = require("../lib/config").alipay;
 
 const urls = {
-    auth: () => {
+    auth: (config) => {
         const url = [config.api.auth];
         const state = new Date().valueOf();
         url.push(`?app_id=${config.app.id}`);
@@ -13,7 +12,7 @@ const urls = {
         url.push(`&redirect_uri=${encodeURIComponent(config.redirect)}`);
         return url.join("");
     },
-    token: (code) => {
+    token: (config, code) => {
         const params = {
             app_id: config.app.id,
             method: "alipay.system.oauth.token",
@@ -29,7 +28,7 @@ const urls = {
 
         return {url: config.api.gateway, params: params};
     },
-    user: (token) => {
+    user: (config, token) => {
         const params = {
             app_id: config.app.id,
             method: "alipay.user.info.share",
@@ -63,37 +62,40 @@ const tool = {
             throw new Error(`Response error, code: ${body.code}\nmessage: ${body.error_response}`);
         }
         return body;
-    },
-    verify: (info) => {
-        let valid = utils.verify(config.keys.public, info);
-        if (!valid) throw new Error("Response verify failed.");
-        return info;
     }
 };
 
 const handler = {
-    user: (token, req, res, next) => {
-        const options = tool.option(urls.user(token));
+    user: (config, token, req, res, next) => {
+        const options = tool.option(urls.user(config, token));
         return request(options)
             .then(tool.parse)
             .then((body) => body.alipay_user_info_share_response)
-            .then(tool.verify)
+            .then((info) => {
+                let valid = utils.verify(config.keys.public, info);
+                if (!valid) throw new Error("Response verify failed.");
+                return info;
+            })
             .then((data) => {
                 config.callbacks.success(data, req, res, next);
             });
     },
-    token: (req, res, next) => {
+    token: (config, req, res, next) => {
         let code = req.query.auth_code;
         if (!code) return Promise.reject(new Error("'auth_code' is empty."));
 
-        const options = tool.option(urls.token(code));
+        const options = tool.option(urls.token(config, code));
         return request(options)
             .then(tool.parse)
             .then((body) => body.alipay_system_oauth_token_response)
-            .then(tool.verify)
+            .then((info) => {
+                let valid = utils.verify(config.keys.public, info);
+                if (!valid) throw new Error("Response verify failed.");
+                return info;
+            })
             .then((data) => {
                 if (config.loadUserInfo) {
-                    return handler.user(data.access_token, req, res, next);
+                    return handler.user(config, data.access_token, req, res, next);
                 } else {
                     config.callbacks.success(data, req, res, next);
                 }
