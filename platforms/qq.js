@@ -39,6 +39,7 @@ const handler = {
         let url = urls.user(token, uid);
         const opts = {url: url, method: "GET", json: true};
         return request(opts).then((response) => response.body).then((data) => {
+            data.uid = uid;
             config.callbacks.success(data, req, res, next);
         });
     },

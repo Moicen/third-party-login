@@ -78,6 +78,7 @@ const handler = {
                 return info;
             })
             .then((data) => {
+                data.uid = uid;
                 config.callbacks.success(data, req, res, next);
             });
     },
