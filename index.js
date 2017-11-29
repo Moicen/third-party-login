@@ -1,104 +1,42 @@
+const config = require("./lib/config");
+const platforms = require("./platforms");
+const fs = require("fs");
+const path = require("path");
+const utils = require("./lib/utils");
 
-const login = require("login");
-
+const names = ["weibo", "weixin", "alipay"];
 
 exports.init = (options) => {
-  if(!options) throw new Error("options is required!");
-  login.init(options);
+    if (!options) throw new Error("options is required!");
+
+    if (typeof options === "string") {
+        let pathname = path.join(process.cwd(), options);
+        if (!fs.existsSync(pathname)) {
+            throw new Error(`Can not find config file at ${options}`);
+        }
+        options = require(pathname);
+    }
+    for (let key in config) {
+        if (config.hasOwnProperty(key)) {
+            let platform = config[key];
+            if (typeof platform === "object") {
+                config[key] = Object.assign(platform, options[key]);
+                config[key].loadUserInfo = options.loadUserInfo;
+            }
+        }
+    }
 };
 
-exports.weibo = {
-	auth: (req, res, next) => {
-		login.url(res, "weibo", "auth");
-	},
-	token: (req, res, next) => {
-
-	},
-	user: (req, res, next) => {
-
-	}
-};
-
-exports.qq = {
-	auth: (req, res, next) => {
-		login.url(res, "qq", "auth");
-	},
-	token: (req, res, next) => {
-
-	},
-	user: (req, res, next) => {
-		
-	}
-};
-
-exports.weixin = {
-	auth: (req, res, next) => {
-		login.url(res, "weixin", "auth");
-	},
-	token: (req, res, next) => {
-
-	},
-	user: (req, res, next) => {
-		
-	}
-};
-
-exports.taobao = {
-	auth: (req, res, next) => {
-		login.url(res, "taobao", "auth");
-	},
-	token: (req, res, next) => {
-
-	},
-	user: (req, res, next) => {
-		
-	}
-};
-
-exports.alipay = {
-	auth: (req, res, next) => {
-		login.url(res, "alipay", "auth");
-	},
-	token: (req, res, next) => {
-
-	},
-	user: (req, res, next) => {
-		
-	}
-};
-
-exports.jd = {
-	auth: (req, res, next) => {
-		login.url(res, "jd", "auth");
-	},
-	token: (req, res, next) => {
-
-	},
-	user: (req, res, next) => {
-		
-	}
-};
-
-exports.github = {
-	auth: (req, res, next) => {
-		login.url(res, "github", "auth");
-	},
-	token: (req, res, next) => {
-
-	},
-	user: (req, res, next) => {
-		
-	}
-};
-
-exports.douban = {
-	auth: (req, res, next) => {
-		login.url(res, "douban", "auth");
-	},
-	token: (req, res, next) => {
-
-	},
-	user: (req, res, next) => {
-		
-	}
-};
+names.forEach((name) => {
+    exports[name] = {
+        auth: (req, res, next) => {
+            const url = utils.url("auth");
+            res.redirect(url);
+        },
+        token: (req, res, next) => {
+            const opt = config[name];
+            Promise.resolve(platforms[name].token(req, res, next, opt))
+                .catch((err) => { opt.callbacks.failure(err, req, res, next); });
+        }
+    }
+});
