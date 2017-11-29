@@ -31,5 +31,3 @@ names.forEach((name) => {
         }
     }
 });
-
-module.exports = new Login();
