@@ -7,7 +7,7 @@ const urls = {
     auth: () => {
         const url = [config.url.auth];
         const state = new Date().valueOf();
-        url.push(`?appid=${config.app.key}`);
+        url.push(`?appid=${config.app.id}`);
         url.push(`&redirect_uri=${encodeURIComponent(config.url.callback)}`);
         url.push(`?scope=${config.scope}`);
         url.push(`&response_type=code&state=${state}`);
@@ -15,8 +15,8 @@ const urls = {
         return url.join("");
     },
     token: (code) => {
-        var url = [config.url.token];
-        url.push(`?appid=${config.app.key}`);
+        const url = [config.url.token];
+        url.push(`?appid=${config.app.id}`);
         url.push(`&secret=${config.app.secret}`);
         url.push("&grant_type=authorization_code");
         url.push(`&code=${code}`);
@@ -27,31 +27,31 @@ const urls = {
     }
 };
 
-
-const user = (token, uid, req, res, next) => {
-    let url = urls.user(token, uid);
-    const opts = {url: url, method: "GET", json: true};
-    return request(opts).then((response) => response.body).then((data) => {
-        config.callbacks.success(data, req, res, next);
-    });
-};
-
-const token = (req, res, next) => {
-    let code = req.query.code;
-    if (!code) return Promise.reject(new Error("'auth_code' is empty."));
-
-    const options = { url: urls.token(code), method: "POST", json: true };
-    return request(options).then((response) => response.body).then((data) => {
-        if (config.loadUserInfo) {
-            return user(data.access_token, data.openid, req, res, next)
-        } else {
+const handler = {
+    user: (token, uid, req, res, next) => {
+        let url = urls.user(token, uid);
+        const opts = {url: url, method: "GET", json: true};
+        return request(opts).then((response) => response.body).then((data) => {
             config.callbacks.success(data, req, res, next);
-        }
-    });
+        });
+    },
+    token: (req, res, next) => {
+        let code = req.query.code;
+        if (!code) return Promise.reject(new Error("'auth_code' is empty."));
+
+        const options = { url: urls.token(code), method: "POST", json: true };
+        return request(options).then((response) => response.body).then((data) => {
+            if (config.loadUserInfo) {
+                return handler.user(data.access_token, data.openid, req, res, next)
+            } else {
+                config.callbacks.success(data, req, res, next);
+            }
+        });
+    }
 };
 
 
 module.exports = {
     urls: urls,
-    token: token
+    token: handler.token
 };

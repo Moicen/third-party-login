@@ -7,7 +7,7 @@ const urls = {
     auth: () => {
         const url = [config.url.auth];
         const state = new Date().valueOf();
-        url.push(`?app_id=${config.app.key}`);
+        url.push(`?app_id=${config.app.id}`);
         url.push(`&scope=${config.scope}`);
         url.push(`&state=${state}`);
         url.push(`&redirect_uri=${encodeURIComponent(config.url.callback)}`);
@@ -15,7 +15,7 @@ const urls = {
     },
     token: (code) => {
         const params = {
-            app_id: config.app.key,
+            app_id: config.app.id,
             method: "alipay.system.oauth.token",
             format: "json",
             charset: "utf-8",
@@ -31,7 +31,7 @@ const urls = {
     },
     user: (token) => {
         const params = {
-            app_id: config.app.key,
+            app_id: config.app.id,
             method: "alipay.user.info.share",
             format: "json",
             charset: "utf-8",
@@ -45,64 +45,64 @@ const urls = {
     }
 };
 
-
-const getOption = (opt) => {
-    return {
-        url: opt.url,
-        json: true,
-        form: opt.params,
-        method: "POST",
-        headers: {
-            "content-type": "application/x-www-form-urlencoded;charset=utf-8"
-        }
-    };
-};
-
-const parse = (response) => {
-    let body = response.body;
-    if ((body.code && body.code !== "10000") || body.error_response) {
-        throw new Error(`Response error, code: ${body.code}\nmessage: ${body.error_response}`);
-    }
-    return body;
-};
-
-const verify = (info) => {
-    let valid = utils.verify(config.keys.public, info);
-    if (!valid) throw new Error("Response verify failed.");
-    return info;
-};
-
-const user = (token, req, res, next) => {
-    const options = getOption(urls.user(token));
-    return request(options)
-        .then(parse)
-        .then((body) => body.alipay_user_info_share_response)
-        .then(verify)
-        .then((data) => {
-            config.callbacks.success(data, req, res, next);
-        });
-};
-
-const token = function (req, res, next) {
-    let code = req.query.auth_code;
-    if (!code) return Promise.reject(new Error("'auth_code' is empty."));
-
-    const options = getOption(urls.token(code));
-    return request(options)
-        .then(parse)
-        .then((body) => body.alipay_system_oauth_token_response)
-        .then(verify)
-        .then((data) => {
-            if (config.loadUserInfo) {
-                return user(data.access_token, req, res, next);
-            } else {
-                config.callbacks.success(data, req, res, next);
+const tool = {
+    option: (opt) => {
+        return {
+            url: opt.url,
+            json: true,
+            form: opt.params,
+            method: "POST",
+            headers: {
+                "content-type": "application/x-www-form-urlencoded;charset=utf-8"
             }
-        });
+        };
+    },
+    parse: (response) => {
+        let body = response.body;
+        if ((body.code && body.code !== "10000") || body.error_response) {
+            throw new Error(`Response error, code: ${body.code}\nmessage: ${body.error_response}`);
+        }
+        return body;
+    },
+    verify: (info) => {
+        let valid = utils.verify(config.keys.public, info);
+        if (!valid) throw new Error("Response verify failed.");
+        return info;
+    }
+};
+
+const handler = {
+    user: (token, req, res, next) => {
+        const options = tool.option(urls.user(token));
+        return request(options)
+            .then(tool.parse)
+            .then((body) => body.alipay_user_info_share_response)
+            .then(tool.verify)
+            .then((data) => {
+                config.callbacks.success(data, req, res, next);
+            });
+    },
+    token: (req, res, next) => {
+        let code = req.query.auth_code;
+        if (!code) return Promise.reject(new Error("'auth_code' is empty."));
+
+        const options = tool.option(urls.token(code));
+        return request(options)
+            .then(tool.parse)
+            .then((body) => body.alipay_system_oauth_token_response)
+            .then(tool.verify)
+            .then((data) => {
+                if (config.loadUserInfo) {
+                    return handler.user(data.access_token, req, res, next);
+                } else {
+                    config.callbacks.success(data, req, res, next);
+                }
+            });
+    }
 };
 
 
 module.exports = {
     urls: urls,
-    token: token
+    token: handler.token
 };
