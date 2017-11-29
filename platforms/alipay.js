@@ -1,7 +1,7 @@
 const Promise = require("bluebird");
 const request = Promise.promisify(require("request"));
 const utils = require("../lib/utils");
-const config = require("./config").alipay;
+const config = require("../lib/config").alipay;
 
 const urls = {
     auth: () => {

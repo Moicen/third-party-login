@@ -1,6 +1,6 @@
 const Promise = require("bluebird");
 const request = Promise.promisify(require("request"));
-const config = require("./config").weibo;
+const config = require("../lib/config").weibo;
 
 const urls = {
     auth: () => {

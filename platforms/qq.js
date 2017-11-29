@@ -1,6 +1,6 @@
 const Promise = require("bluebird");
 const request = Promise.promisify(require("request"));
-const config = require("./config").qq;
+const config = require("../lib/config").qq;
 
 
 const urls = {
