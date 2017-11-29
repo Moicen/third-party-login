@@ -4,7 +4,7 @@ const config = require("../lib/config").weibo;
 
 const urls = {
     auth: () => {
-        const url = [config.url.auth];
+        const url = [config.api.auth];
         const state = new Date().valueOf();
         url.push(`?client_id=${config.app.id}`);
         url.push(`&response_type=code&state=${state}`);
@@ -12,16 +12,16 @@ const urls = {
         return url.join("");
     },
     token: (code) => {
-        const url = [config.url.token];
+        const url = [config.api.token];
         url.push(`?client_id=${config.app.id}`);
         url.push(`&client_secret=${config.app.secret}`);
         url.push("&grant_type=authorization_code");
-        url.push(`&redirect_uri=${encodeURIComponent(config.url.callback)}`);
+        url.push(`&redirect_uri=${encodeURIComponent(config.redirect)}`);
         url.push(`&code=${code}`);
         return url.join("");
     },
     user: (token, uid) => {
-        return `${config.url.user}?access_token=${token}&uid=${uid}`;
+        return `${config.api.user}?access_token=${token}&uid=${uid}`;
     }
 };
 

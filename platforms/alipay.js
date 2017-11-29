@@ -5,12 +5,12 @@ const config = require("../lib/config").alipay;
 
 const urls = {
     auth: () => {
-        const url = [config.url.auth];
+        const url = [config.api.auth];
         const state = new Date().valueOf();
         url.push(`?app_id=${config.app.id}`);
         url.push(`&scope=${config.scope}`);
         url.push(`&state=${state}`);
-        url.push(`&redirect_uri=${encodeURIComponent(config.url.callback)}`);
+        url.push(`&redirect_uri=${encodeURIComponent(config.redirect)}`);
         return url.join("");
     },
     token: (code) => {
@@ -27,7 +27,7 @@ const urls = {
         };
         params.sign = utils.sign(config.keys.private, params);
 
-        return {url: config.url.gateway, params: params};
+        return {url: config.api.gateway, params: params};
     },
     user: (token) => {
         const params = {
@@ -41,7 +41,7 @@ const urls = {
             auth_token: token
         };
         params["sign"] = utils.sign(config.keys.private, params);
-        return {url: config.url.gateway, params: params};
+        return {url: config.api.gateway, params: params};
     }
 };
 

@@ -5,17 +5,17 @@ const config = require("../lib/config").weixin;
 
 const urls = {
     auth: () => {
-        const url = [config.url.auth];
+        const url = [config.api.auth];
         const state = new Date().valueOf();
         url.push(`?appid=${config.app.id}`);
-        url.push(`&redirect_uri=${encodeURIComponent(config.url.callback)}`);
+        url.push(`&redirect_uri=${encodeURIComponent(config.redirect)}`);
         url.push(`?scope=${config.scope}`);
         url.push(`&response_type=code&state=${state}`);
         url.push("#wechat_redirect");
         return url.join("");
     },
     token: (code) => {
-        const url = [config.url.token];
+        const url = [config.api.token];
         url.push(`?appid=${config.app.id}`);
         url.push(`&secret=${config.app.secret}`);
         url.push("&grant_type=authorization_code");
@@ -23,7 +23,7 @@ const urls = {
         return url.join("");
     },
     user: (token, uid) => {
-        return `${config.url.user}?access_token=${token}&openid=${uid}`;
+        return `${config.api.user}?access_token=${token}&openid=${uid}`;
     }
 };
 

@@ -5,7 +5,7 @@ const config = require("../lib/config").qq;
 
 const urls = {
     auth: () => {
-        const url = [config.url.auth];
+        const url = [config.api.auth];
         url.push(`?client_id=${config.app.id}`);
         url.push(`&redirect_uri=${encodeURIComponent(config.url.callback)}`);
         url.push(`&scope=${config.scope}`);
@@ -13,20 +13,20 @@ const urls = {
         return url.join("");
     },
     token: (code) => {
-        const url = [config.url.token];
+        const url = [config.api.token];
         const state = new Date().valueOf();
         url.push(`?client_id=${config.app.id}`);
         url.push(`&client_secret=${config.app.secret}`);
         url.push("&grant_type=authorization_code");
         url.push(`&code=${code}&state=${state}`);
-        url.push(`&redirect_uri=${encodeURIComponent(config.url.callback)}`);
+        url.push(`&redirect_uri=${encodeURIComponent(config.redirect)}`);
         return url.join("");
     },
     uid: (token) => {
-        return `${config.url.uid}?access_token=${token}`;
+        return `${config.api.uid}?access_token=${token}`;
     },
     user: (token, uid) => {
-        const url = [config.url.user];
+        const url = [config.api.user];
         url.push(`?access_token=${token}`);
         url.push(`&oauth_consumer_key=${config.app.id}`);
         url.push(`&openid=${uid}`);
