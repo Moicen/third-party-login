@@ -67,6 +67,6 @@ const handler = {
 
 
 module.exports = {
-    urls: urls,
+    auth: urls.auth(),
     token: handler.token
 };
