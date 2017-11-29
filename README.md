@@ -4,7 +4,7 @@ third party login plugin
     npm install third-party-login --save
     
 
-currently available for [weibo](https://weibo.com), [wechat](http://weixin.qq.com), [alipay](https://www.alipay.com)
+currently available for [weibo](https://weibo.com), [weixin](http://weixin.qq.com), [alipay](https://www.alipay.com)
 
 will add [github](https://github.com) [douban](https://douban.com) [taobao](https://www.taobao.com) [jd](https://www.jd.com) soon.
 
