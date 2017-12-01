@@ -1,6 +1,6 @@
 {
   "name": "third-party-login",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "third party login integrate",
   "main": "index.js",
   "scripts": {
