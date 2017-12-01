@@ -24,16 +24,19 @@ usage:
     const config = require("./config");
     const login = require("third-party-login");
         
+    // initialization
     login.init(config);
         
+    // single platform
     router.get("/login/weibo", login.weibo.auth);
     router.get("/login/callback/weibo", login.weibo.token);
         
-    router.get("/login/weixin", login.weixin.auth);
-    router.get("/login/callback/weixin", login.weixin.token);
-        
-    router.get("/login/alipay", login.alipay.auth);
-    router.get("/login/callback/alipay", login.alipay.token);;
+    // multi-platforms
+    ["weixin", "alipay", "qq"].forEach((key) => {
+        router.get(`/login/${key}`, login[key].auth);
+        router.get(`/login/callback/${key}`, login[key].token);
+    }
+    
 
 
 `config`:
