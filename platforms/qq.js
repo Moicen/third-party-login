@@ -1,3 +1,9 @@
+/**
+ * QQ url construct and callback handlers
+ *
+ */
+
+
 const Promise = require("bluebird");
 const request = Promise.promisify(require("request"));
 const config = require("../lib/config").qq;
