@@ -8,7 +8,7 @@ const urls = {
         const state = new Date().valueOf();
         url.push(`?appid=${config.app.id}`);
         url.push(`&redirect_uri=${encodeURIComponent(config.redirect)}`);
-        url.push(`?scope=${config.scope}`);
+        url.push(`&scope=${config.scope}`);
         url.push(`&response_type=code&state=${state}`);
         url.push("#wechat_redirect");
         return url.join("");
